@@ -18,15 +18,6 @@ The maintainers of Baileys do not in any way condone the use of this application
 > The original repository had to be removed by the original author - we now continue development in this repository here.
 This is the only official repository and is maintained by the community.
 > **Join the Discord [here](https://discord.gg/G3RfM6FDHS)**
- 
-## Example
-
-Do check out & run the example script to see an example usage of the library.
-The script covers most common use cases.
-To run the example script, download or clone the repo and then type the following in a terminal:
-1. ``` cd path/to/Baileys ```
-2. ``` yarn ```
-3. ``` yarn example ```
 
 ## Install
 
