@@ -1,6 +1,6 @@
 import { Boom } from '@hapi/boom'
 import { proto } from '../../WAProto'
-import { MessageReceiptType, MessageRelayOptions, SocketConfig, WAMessageKey, ContactAction, WAInitiateCallOptions, WAInitiateCallResult } from '../Types'
+import { MessageReceiptType, MessageRelayOptions, SocketConfig, WAMessageKey, ContactAction, WAInitiateCallOptions, WAInitiateCallResult, WACallParticipant } from '../Types'
 import { BinaryNode } from '../WABinary'
 
 export declare const makeMessagesRecvSocket: (config: SocketConfig) => {
@@ -13,6 +13,18 @@ export declare const makeMessagesRecvSocket: (config: SocketConfig) => {
     initiateCall: (jid: string, options?: WAInitiateCallOptions) => Promise<WAInitiateCallResult>
     cancelCall: (callId: string, callTo: string) => Promise<void>
     rejectCall: (callId: string, callFrom: string) => Promise<void>
+    acceptCall: (callId: string, callFrom: string, isVideo?: boolean) => Promise<void>
+    preacceptCall: (callId: string, callCreator: string, isVideo?: boolean) => Promise<void>
+    terminateCall: (callId: string, callTo: string, callCreator?: string, reason?: string, duration?: number) => Promise<void>
+    sendRelayLatency: (callId: string, callCreator: string, relays: Array<{ relayName?: string; latency: number; relayId?: string; dlBw?: number; ulBw?: number }>, transactionId?: string) => Promise<void>
+    sendTransport: (callId: string, callCreator: string, to: string, candidates: Array<{ priority: string; data?: Uint8Array }>, round?: number) => Promise<void>
+    sendCallDuration: (callId: string, callCreator: string, peer: string, audioDuration: number, callType?: string) => Promise<void>
+    muteCall: (callId: string, callCreator: string, to: string, muted: boolean) => Promise<void>
+    sendHeartbeat: (callId: string, callCreator: string) => Promise<void>
+    sendEncRekey: (callId: string, callCreator: string, to: string, transactionId: string) => Promise<void>
+    sendVideoState: (callId: string, callCreator: string, to: string, enabled: boolean, orientation?: string) => Promise<void>
+    queryCallLink: (token: string, media?: 'video' | 'audio') => Promise<BinaryNode>
+    joinCallLink: (token: string, media?: 'video' | 'audio') => Promise<BinaryNode>
     fetchMessageHistory: (count: number, oldestMsgKey: WAMessageKey, oldestMsgTimestamp: number | Long) => Promise<string>
     requestPlaceholderResend: (messageKey: WAMessageKey) => Promise<string | undefined>
     getPrivacyTokens: (jids: string[]) => Promise<BinaryNode>

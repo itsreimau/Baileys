@@ -7,6 +7,13 @@ export declare const Browsers: BrowsersMap
 
 export declare const getPlatformId: (browser: string) => any
 
+/**
+ * Checks if the browser tuple represents an Android companion device.
+ * @param browser - Browser tuple [os, platform, version]
+ * @returns True if platform is 'Android' (case-insensitive)
+ */
+export declare const isAndroidBrowser: (browser: [string, string, string]) => boolean
+
 export declare const BufferJSON: {
     replacer: (k: any, value: any) => any
     reviver: (_: any, value: any) => any

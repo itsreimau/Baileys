@@ -105,6 +105,8 @@ export interface WAUrlInfo {
 type Mentionable = {
     /** list of jids that are mentioned in the accompanying text */
     mentions?: string[]
+    /** mention all group members (sets nonJidMentions=1 and empty mentionedJid/groupMentions) */
+    mentionAll?: boolean
 }
 
 type Contextable = {
