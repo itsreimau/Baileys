@@ -78,12 +78,14 @@ import makeWASocket from '@innovatorssoft/baileys'
 - [Sending Messages](#sending-messages)
     - [Non-Media Messages](#non-media-messages)
         - [Text Message](#text-message)
+        - [Message Templates](#message-templates)
         - [Quote Message](#quote-message-works-with-all-types)
         - [Mention User](#mention-user-works-with-most-types)
         - [Forward Messages](#forward-messages)
         - [Location Message](#location-message)
         - [Live Location Message](#live-location-message) 
         - [Contact Message](#contact-message)
+        - [vCard / Contact Cards](#vcard--contact-cards)
         - [Reaction Message](#reaction-message)
         - [Pin Message](#pin-message)
         - [Keep Message](#keep-message) 
@@ -103,6 +105,7 @@ import makeWASocket from '@innovatorssoft/baileys'
         - [Request Phone Number Message](#request-phone-number-message) 
         - [Buttons Reply Message](#buttons-reply-message) 
         - [Buttons Message](#buttons-message)
+        - [Interactive Messages](#interactive-messages) 
         - [Buttons List Message](#buttons-list-message) 
         - [Buttons Product List Message](#buttons-product-list-message) 
         - [Buttons Cards Message](#buttons-cards-message) 
@@ -112,10 +115,7 @@ import makeWASocket from '@innovatorssoft/baileys'
         - [Buttons Interactive Message PAY](#buttons-interactive-message-PAY) 
         - [Status Mentions Message](#status-mentions-message) 
         - [Shop Message](#shop-message) 
-        - [Collection Message](#collection-message)
-        - [vCard / Contact Cards](#vcard--contact-cards)
-        - [Message Templates](#message-templates)
-        - [Interactive Messages](#interactive-messages) 
+        - [Collection Message](#collection-message) 
     - [AI Icon Feature](#ai-icon-feature) 
     - [Sending with Link Preview](#sending-messages-with-link-previews)
     - [Media Messages](#media-messages)
@@ -832,6 +832,78 @@ sock.ev.on('messages.update', (updates) => {
 await sock.sendMessage(jid, { text: 'hello word' })
 ```
 
+#### Message Templates
+
+Generate consistently formatted messages using native template string interpolation with curly brackets (e.g., `{{variable:defaultValue}}`).
+
+```ts
+import { 
+    createTemplateManager, 
+    renderTemplate, 
+    PRESET_TEMPLATES 
+} from '@innovatorssoft/baileys'
+
+// Create a manager and load the presets (includePresets = true)
+const templates = createTemplateManager(true)
+
+// Or, quick render without loading the manager
+const quick = renderTemplate(
+    'Hi {{name}}, your order #{{orderId}} is {{status:processing}}',
+    { name: 'Alice', orderId: '123' } // 'processing' acts a default value
+)
+```
+
+### Rendering Preset Templates
+
+The manager comes out of the box with beautifully designed, ready-to-use templates for common scenarios like Orders, Invoices, Greetings, and Support Tickets. 
+
+```ts
+// Renders the built-in 'invoice' template using the provided data
+const invoiceText = templates.render('invoice', {
+    invoiceNumber: 'INV-111',
+    customerName: 'John Doe',
+    invoiceDate: '2024-01-15',
+    dueDate: '2024-01-30',
+    items: '1x Web Design\n1x Hosting',
+    subtotal: '10,000',
+    tax: '1,000',
+    total: '11,000',
+    // We omit paymentMethod and bankAccount to let them fall back to template default
+})
+
+await sock.sendMessage(jid, { text: invoiceText })
+```
+
+### Custom Templates
+
+You can create entirely custom templates, and define strict parameter variables. 
+
+```ts
+// Registering a Custom Template
+templates.create({
+    name: 'Welcome Message',
+    content: `Hello {{name}}! 👋
+    
+Welcome to {{company}}!
+
+Here are our services:
+{{services}}
+
+Contact: {{phone:0812-3456-7890}}`,
+    category: 'greeting'
+})
+
+// Using it elsewhere in your app
+const welcome = templates.render('welcome_message', {
+    name: 'Budi',
+    company: 'PT Example',
+    services: '- Support\n- Inquiries'
+})
+```
+
+You can iterate through your templates using functions like `templates.getAll()` and `templates.getByCategory('greeting')`, or backup and restore them using `.export()` and `.import(json)`.
+
+
 #### Quote Message (works with all types)
 ```ts
 await sock.sendMessage(jid, { text: 'hello word' }, { quoted: message })
@@ -902,6 +974,68 @@ await sock.sendMessage(
 )
 ```
 
+#### vCard / Contact Cards
+
+Easily generate and send vCard (VCF) contact data.
+
+```ts
+import { 
+    quickContact, 
+    createContactCard, 
+    createContactCards,
+    generateVCard 
+} from '@innovatorssoft/baileys'
+```
+
+### Sending a Single Contact
+
+```ts
+// 1. Create a contact object quickly
+const contact = quickContact('John Doe', '+1234567890', { 
+    organization: 'Acme Corp',
+    email: 'john@acme.com'
+})
+
+// 2. Send it!
+await sock.sendMessage(jid, createContactCard(contact))
+```
+
+### Sending Multiple Contacts
+
+```ts
+const c1 = quickContact('Alice', '+111111')
+const c2 = quickContact('Bob', '+222222')
+
+await sock.sendMessage(jid, createContactCards([c1, c2]))
+```
+
+### Advanced Contact Generation
+
+If you need full control over the vCard fields (addresses, multiple phones, birthday), you can construct a full `VCardContact` object:
+
+```ts
+const fullContact = {
+    fullName: 'Jane Smith',
+    organization: 'Tech Inc',
+    title: 'Senior Developer',
+    phones: [
+        { number: '+123', type: 'CELL' },
+        { number: '+456', type: 'WORK', label: 'Office' }
+    ],
+    emails: [
+        { email: 'jane@tech.inc', type: 'WORK' }
+    ],
+    addresses: [
+        { street: '123 Main St', city: 'NY', country: 'USA' }
+    ],
+    birthday: '1990-01-01',
+    note: 'Met at the conference'
+}
+
+await sock.sendMessage(jid, createContactCard(fullContact))
+```
+
+
 #### Reaction Message
 - You need to pass the key of message, you can retrieve from [store](#implementing-a-data-store) or use a [key](https://baileys.whiskeysockets.io/types/WAMessageKey.html) object
 ```ts
@@ -940,228 +1074,6 @@ await sock.sendMessage(
 )
 ```
 
-#### vCard / Contact Cards
-
-Easily generate and send vCard (VCF) contact data.
-
-```ts
-import { 
-    quickContact, 
-    createContactCard, 
-    createContactCards 
-} from '@innovatorssoft/baileys'
-```
-
-#### Message Templates
-
-Generate consistently formatted messages using native template string interpolation with curly brackets (e.g., `{{variable:defaultValue}}`).
-
-```ts
-import { 
-    createTemplateManager, 
-    renderTemplate, 
-    PRESET_TEMPLATES 
-} from '@innovatorssoft/baileys'
-
-// Create a manager and load the presets (includePresets = true)
-const templates = createTemplateManager(true)
-
-// Or, quick render without loading the manager
-const quick = renderTemplate(
-    'Hi {{name}}, your order #{{orderId}} is {{status:processing}}',
-    { name: 'Alice', orderId: '123' } // 'processing' acts a default value
-)
-```
-
-#### Interactive Messages
-
-Send native formatting wrappers—like buttons, lists, URL CTAs, and Copy CTAs—without directly formatting the complex payload manually.
-
-```typescript
-import { 
-    generateInteractiveButtonMessage,
-    generateInteractiveListMessage,
-    generateCombinedButtons,
-    generateCopyCodeButton,
-    generateUrlButtonMessage,
-    generateQuickReplyButtons
-} from '@innovatorssoft/baileys'
-
-// Quick Reply Buttons
-const quickButtons = generateQuickReplyButtons(
-    'Please select an option below:',
-    [
-        { id: 'btn-1', displayText: '✅ Accept' },
-        { id: 'btn-2', displayText: '❌ Reject' },
-        { id: 'btn-3', displayText: '📞 Contact Support' }
-    ],
-    { footer: 'Powered by Baileys' }
-)
-
-await sock.sendMessage(jid, quickButtons)
-
-// URL Button
-const urlButton = generateUrlButtonMessage(
-    'Visit our website for more info',
-    [{ displayText: '🌐 Open Website', url: 'https://example.com' }],
-    { title: 'Product Info', footer: 'Click to open' }
-)
-
-await sock.sendMessage(jid, urlButton)
-
-// Copy Code Button (for OTPs, Promos, etc.)
-const copyButton = generateCopyCodeButton(
-    'Your OTP Code is:',
-    '123456',
-    '📋 Copy Code'
-)
-
-await sock.sendMessage(jid, copyButton)
-
-// Combined Buttons (Mix URL, Reply, Copy, Call)
-const combinedButtons = generateCombinedButtons(
-    'Choose an action:',
-    [
-        { type: 'reply', displayText: '🛒 Order Now', id: 'order' },
-        { type: 'url', displayText: '🌐 Website', url: 'https://example.com' },
-        { type: 'call', displayText: '📞 Phone', phoneNumber: '+6281234567890' },
-        { type: 'copy', displayText: '📋 Copy Promo', copyCode: 'PROMO2024' }
-    ],
-    { title: 'Main Menu', footer: 'Baileys' }
-)
-
-await sock.sendMessage(jid, combinedButtons)
-
-// List Message
-const listMessage = generateInteractiveListMessage({
-    title: '📋 Product Menu',
-    buttonText: 'View Menu',
-    description: 'Please select a product',
-    footer: 'Powered by Baileys',
-    sections: [
-        {
-            title: 'Food',
-            rows: [
-                { rowId: 'nasi-goreng', title: 'Fried Rice', description: '$2.50' },
-                { rowId: 'mie-goreng', title: 'Fried Noodles', description: '$2.00' }
-            ]
-        },
-        {
-            title: 'Beverages',
-            rows: [
-                { rowId: 'es-teh', title: 'Ice Tea', description: '$0.50' },
-                { rowId: 'kopi', title: 'Coffee', description: '$1.00' }
-            ]
-        }
-    ]
-})
-
-await sock.sendMessage(jid, listMessage)
-```
-
-
-### Rendering Preset Templates
-
-The manager comes out of the box with beautifully designed, ready-to-use templates for common scenarios like Orders, Invoices, Greetings, and Support Tickets. 
-
-```ts
-// Renders the built-in 'invoice' template using the provided data
-const invoiceText = templates.render('invoice', {
-    invoiceNumber: 'INV-111',
-    customerName: 'John Doe',
-    invoiceDate: '2024-01-15',
-    dueDate: '2024-01-30',
-    items: '1x Web Design\n1x Hosting',
-    subtotal: '10,000',
-    tax: '1,000',
-    total: '11,000',
-    // We omit paymentMethod and bankAccount to let them fall back to template default
-})
-
-await sock.sendMessage(jid, { text: invoiceText })
-```
-
-### Custom Templates
-
-You can create entirely custom templates, and define strict parameter variables. 
-
-```ts
-// Registering a Custom Template
-templates.create({
-    name: 'Welcome Message',
-    content: `Hello {{name}}! 👋
-    
-Welcome to {{company}}!
-
-Here are our services:
-{{services}}
-
-Contact: {{phone:0812-3456-7890}}`,
-    category: 'greeting'
-})
-
-// Using it elsewhere in your app
-const welcome = templates.render('welcome_message', {
-    name: 'Budi',
-    company: 'PT Example',
-    services: '- Support\n- Inquiries'
-})
-```
-
-You can iterate through your templates using functions like `templates.getAll()` and `templates.getByCategory('greeting')`, or backup and restore them using `.export()` and `.import(json)`.
-
----
-
-
-### Sending a Single Contact
-
-```ts
-// 1. Create a contact object quickly
-const contact = quickContact('John Doe', '+1234567890', { 
-    organization: 'Acme Corp',
-    email: 'john@acme.com'
-})
-
-// 2. Send it!
-await sock.sendMessage(jid, createContactCard(contact))
-```
-
-### Sending Multiple Contacts
-
-```ts
-const c1 = quickContact('Alice', '+111111')
-const c2 = quickContact('Bob', '+222222')
-
-await sock.sendMessage(jid, createContactCards([c1, c2]))
-```
-
-### Advanced Contact Generation
-
-If you need full control over the vCard fields (addresses, multiple phones, birthday), you can construct a full `VCardContact` object:
-
-```ts
-import { generateVCard } from '@innovatorssoft/baileys'
-
-const fullContact = {
-    fullName: 'Jane Smith',
-    organization: 'Tech Inc',
-    title: 'Senior Developer',
-    phones: [
-        { number: '+123', type: 'CELL' },
-        { number: '+456', type: 'WORK', label: 'Office' }
-    ],
-    emails: [
-        { email: 'jane@tech.inc', type: 'WORK' }
-    ],
-    addresses: [
-        { street: '123 Main St', city: 'NY', country: 'USA' }
-    ],
-    birthday: '1990-01-01',
-    note: 'Met at the conference'
-}
-
-await sock.sendMessage(jid, createContactCard(fullContact))
-```
 
 ---
 
@@ -1505,6 +1417,93 @@ await sock.sendMessage(
     }
 )
 ```
+
+#### Interactive Messages
+
+Send native formatting wrappers—like buttons, lists, URL CTAs, and Copy CTAs—without directly formatting the complex payload manually.
+
+```typescript
+import { 
+    generateInteractiveButtonMessage,
+    generateInteractiveListMessage,
+    generateCombinedButtons,
+    generateCopyCodeButton,
+    generateUrlButtonMessage,
+    generateQuickReplyButtons
+} from '@innovatorssoft/baileys'
+
+// Quick Reply Buttons
+const quickButtons = generateQuickReplyButtons(
+    'Please select an option below:',
+    [
+        { id: 'btn-1', displayText: '✅ Accept' },
+        { id: 'btn-2', displayText: '❌ Reject' },
+        { id: 'btn-3', displayText: '📞 Contact Support' }
+    ],
+    { footer: 'Powered by Baileys' }
+)
+
+await sock.sendMessage(jid, quickButtons)
+
+// URL Button
+const urlButton = generateUrlButtonMessage(
+    'Visit our website for more info',
+    [{ displayText: '🌐 Open Website', url: 'https://example.com' }],
+    { title: 'Product Info', footer: 'Click to open' }
+)
+
+await sock.sendMessage(jid, urlButton)
+
+// Copy Code Button (for OTPs, Promos, etc.)
+const copyButton = generateCopyCodeButton(
+    'Your OTP Code is:',
+    '123456',
+    '📋 Copy Code'
+)
+
+await sock.sendMessage(jid, copyButton)
+
+// Combined Buttons (Mix URL, Reply, Copy, Call)
+const combinedButtons = generateCombinedButtons(
+    'Choose an action:',
+    [
+        { type: 'reply', displayText: '🛒 Order Now', id: 'order' },
+        { type: 'url', displayText: '🌐 Website', url: 'https://example.com' },
+        { type: 'call', displayText: '📞 Phone', phoneNumber: '+6281234567890' },
+        { type: 'copy', displayText: '📋 Copy Promo', copyCode: 'PROMO2024' }
+    ],
+    { title: 'Main Menu', footer: 'Baileys' }
+)
+
+await sock.sendMessage(jid, combinedButtons)
+
+// List Message
+const listMessage = generateInteractiveListMessage({
+    title: '📋 Product Menu',
+    buttonText: 'View Menu',
+    description: 'Please select a product',
+    footer: 'Powered by Baileys',
+    sections: [
+        {
+            title: 'Food',
+            rows: [
+                { rowId: 'nasi-goreng', title: 'Fried Rice', description: '$2.50' },
+                { rowId: 'mie-goreng', title: 'Fried Noodles', description: '$2.00' }
+            ]
+        },
+        {
+            title: 'Beverages',
+            rows: [
+                { rowId: 'es-teh', title: 'Ice Tea', description: '$0.50' },
+                { rowId: 'kopi', title: 'Coffee', description: '$1.00' }
+            ]
+        }
+    ]
+})
+
+await sock.sendMessage(jid, listMessage)
+```
+
 
 ### Buttons List Message
 ```ts
@@ -3264,13 +3263,18 @@ console.log (`list name: ${bList.name}, recps: ${bList.recipients}`)
 
 Post rich text, image, video, and audio statuses easily using `StatusHelper`.
 
+> [!IMPORTANT]
+> In Multi-Device mode, statuses sent to `status@broadcast` are only visible to contacts included in the `statusJidList`. The new `StatusHelper.send()` handles this automatically.
+
 ```ts
 import { 
     StatusHelper, 
-    STATUS_BROADCAST_JID,
     STATUS_BACKGROUNDS,
     STATUS_FONTS
 } from '@innovatorssoft/baileys'
+
+// JIDs of contacts who should see the status
+const myContacts = ['12345@s.whatsapp.net', '67890@s.whatsapp.net']
 ```
 
 ### Text Status
@@ -3279,52 +3283,39 @@ You can use the built-in background colors and fonts.
 
 ```ts
 // 1. A simple text status on a green background
-await sock.sendMessage(
-    STATUS_BROADCAST_JID, 
-    StatusHelper.text('Hello World! 🌍', STATUS_BACKGROUNDS.solid.green)
-)
+const status = StatusHelper.text('Hello World! 🌍', STATUS_BACKGROUNDS.solid.purple)
+await StatusHelper.send(sock, status, myContacts)
 
 // 2. A fully customized text status
 import { createTextStatus } from '@innovatorssoft/baileys'
 
-await sock.sendMessage(STATUS_BROADCAST_JID, createTextStatus({
+const customStatus = createTextStatus({
     text: 'Custom styled status!',
     backgroundColor: STATUS_BACKGROUNDS.gradient.sunset[0],
     font: STATUS_FONTS.DANCING,
     textColor: '#FFFFFF'
-}))
+})
+await StatusHelper.send(sock, customStatus, myContacts)
 ```
 
 ### Media Status
 
-Generate the correct status object from buffers or URLs.
+Generate and send media statuses with captions.
 
 ```ts
 // Image Status
 const imageBuffer = fs.readFileSync('./my-photo.jpg')
-await sock.sendMessage(
-    STATUS_BROADCAST_JID, 
-    StatusHelper.image(imageBuffer, 'Beautiful day! ☀️')
-)
+await StatusHelper.send(sock, StatusHelper.image(imageBuffer, 'Beautiful day! ☀️'), myContacts)
 
 // Video Status
 const videoBuffer = fs.readFileSync('./my-video.mp4')
-await sock.sendMessage(
-    STATUS_BROADCAST_JID, 
-    StatusHelper.video(videoBuffer, 'Check this out! 🎬')
-)
+await StatusHelper.send(sock, StatusHelper.video(videoBuffer, 'Check this out! 🎬'), myContacts)
 
 // GIF Status (Video played on loop without sound)
-await sock.sendMessage(
-    STATUS_BROADCAST_JID, 
-    StatusHelper.gif(gifBuffer, 'Animated! 🎭')
-)
+await StatusHelper.send(sock, StatusHelper.gif(gifBuffer, 'Animated! 🎭'), myContacts)
 
 // Voice Note / Audio Status
-await sock.sendMessage(
-    STATUS_BROADCAST_JID, 
-    StatusHelper.voiceNote(audioBuffer)
-)
+await StatusHelper.send(sock, StatusHelper.voiceNote(audioBuffer), myContacts)
 ```
 
 ---
