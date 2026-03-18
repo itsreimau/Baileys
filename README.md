@@ -10,7 +10,7 @@ The maintainers of Baileys do not in any way condone the use of this application
 ##
 > [!IMPORTANT]
 > This is the only official repository and is maintained by the community.
-> **Join the Discord [here](https://discord.gg/G3RfM6FDHS)**
+> # **Join the Discord [here](https://discord.gg/G3RfM6FDHS)**
  
 ## Install
 
