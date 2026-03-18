@@ -1,4 +1,11 @@
-# <div align='center'><img src="https://raw.githubusercontent.com/innovatorssoft/Baileys/main/assets/media/logo.png" width="150" height="150" /><br>INNOVATORS SOFT Baileys - Typescript/Javascript WhatsApp Web API</div>
+<div align="center">
+  <img src="https://raw.githubusercontent.com/innovatorssoft/Baileys/main/assets/media/logo.png" width="150" height="150" />
+
+  # INNOVATORS SOFT
+  ## Baileys - WhatsApp Web API
+  **Typescript/Javascript WhatsApp Web API Modificatios by [Innovators Soft](https://innovatorssoftpk.com/)**
+</div>
+
 <p align="center">
 <a href="https://www.npmjs.com/package/@innovatorssoft/baileys"><img src="https://img.shields.io/npm/v/@innovatorssoft/baileys?style=for-the-badge&logo=npm" alt="npm version" /></a>
 <a href="https://www.npmjs.com/package/@innovatorssoft/baileys"><img src="https://img.shields.io/npm/dt/@innovatorssoft/baileys?style=for-the-badge&logo=npm" alt="npm downloads" /></a>
