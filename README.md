@@ -1,4 +1,11 @@
-# <div align='center'>INNOVATORS SOFT Baileys - Typescript/Javascript WhatsApp Web API</div>
+# <div align='center'><img src="https://raw.githubusercontent.com/innovatorssoft/Baileys/main/assets/media/logo.png" width="150" height="150" /><br>INNOVATORS SOFT Baileys - Typescript/Javascript WhatsApp Web API</div>
+<p align="center">
+<a href="https://www.npmjs.com/package/@innovatorssoft/baileys"><img src="https://img.shields.io/npm/v/@innovatorssoft/baileys?style=for-the-badge&logo=npm" alt="npm version" /></a>
+<a href="https://www.npmjs.com/package/@innovatorssoft/baileys"><img src="https://img.shields.io/npm/dt/@innovatorssoft/baileys?style=for-the-badge&logo=npm" alt="npm downloads" /></a>
+<a href="https://github.com/innovatorssoft/Baileys/stargazers"><img src="https://img.shields.io/github/stars/innovatorssoft/Baileys?style=for-the-badge&logo=github" alt="github stars" /></a>
+<a href="https://github.com/innovatorssoft/Baileys/network/members"><img src="https://img.shields.io/github/forks/innovatorssoft/Baileys?style=for-the-badge&logo=github" alt="github forks" /></a>
+<a href="https://github.com/innovatorssoft/Baileys/blob/main/LICENSE"><img src="https://img.shields.io/github/license/innovatorssoft/Baileys?style=for-the-badge&logo=github" alt="license" /></a>
+</p>
 
 ### Important Note
 
